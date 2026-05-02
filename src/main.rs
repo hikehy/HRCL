@@ -1,4 +1,4 @@
-use mlua;
+use mlua::{self};
 use std::fs;
 use std::io::Write;
 use std::process::exit;
@@ -13,18 +13,20 @@ fn main() {
         std::io::stdin().read_line(&mut input).unwrap();
         if input.trim() == "exit" {
             exit(0);
-        } else if input.trim() == "script" {
-            run_lua();
         } else {
-            println!("Invalid Command: {}", input.trim());
+            let _ = run_lua(input.trim());
         }
     }
 }
 
-fn run_lua() {
+fn run_lua(command: &str) -> std::result::Result<(), Box<dyn std::error::Error>> {
+    let filepath = format!("src/functions/{}.lua", command.trim());
+    let script = fs::read_to_string(&filepath)?;
+
     let lua = mlua::Lua::new();
-    let script = fs::read_to_string("src/functions/script.lua").unwrap();
-    lua.load(&script).exec().unwrap();
+    lua.load(&script).exec()?;
+
+    Ok(())
 }
 
 // Things i need to figure out: Executing funcions in other files
